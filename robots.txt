@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://karuta.kkpwebninja.com/sitemap.xml

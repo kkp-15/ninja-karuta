@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<!--
+═══════════ 開発メモ ═══════════
+手持ちのかるたで遊ぶための「読み手」アプリ。札の文だけ登録すれば、
+あとはランダムに読み上げる。読み手がいなくても全員が取り手に回れる。
+
+■ 設計ルール
+- 単一HTML / フレームワークなし / Cloudflare Pages
+- 読み上げは Web Speech API。日本語音声は端末内蔵なので通信不要
+- 保存は localStorage のみ。サーバに送らない（登録した札は端末から出ない）
+- 山札モデル：一度読んだ札は戻さない。重複しないのが実際のかるたと同じ
+════════════════════════════
+-->
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#F08A3C">
+<title>かるた読み上げ｜手持ちの札を登録して読み手いらずで遊べる無料アプリ</title>
+<meta name="description" content="かるたの読み札を登録すると、ランダムに読み上げてくれる無料アプリ。読み手がいなくても全員で取り合えます。自作かるた・百人一首・学習かるたに。登録不要、データは端末内のみ。">
+<link rel="canonical" href="https://karuta.kkpwebninja.com/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="かるた読み上げ｜読み手いらずで遊べる">
+<meta property="og:description" content="手持ちのかるたの読み札を登録すると、ランダムに読み上げます。全員が取り手に回れます。">
+<meta property="og:url" content="https://karuta.kkpwebninja.com/">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<meta property="og:site_name" content="かるた読み上げ">
+<meta property="og:image" content="https://karuta.kkpwebninja.com/ogp.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://karuta.kkpwebninja.com/ogp.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "かるた読み上げ",
+  "url": "https://karuta.kkpwebninja.com/",
+  "description": "手持ちのかるたの読み札を登録すると、ランダムに読み上げてくれる無料アプリ。読み手がいなくても全員で取り合えます。登録した札は端末内にのみ保存されます。",
+  "applicationCategory": "GameApplication",
+  "operatingSystem": "Web",
+  "offers": {"@type":"Offer","price":"0","priceCurrency":"JPY"},
+  "author": {"@type":"Organization","name":"web忍者の砦"}
+}
+</script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-2LM85GJN0L"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-2LM85GJN0L');
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&display=swap">
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1298304917726270" crossorigin="anonymous"></script>
+<style>
+:root{--orange:#F08A3C;--orange-deep:#E06A20;--cream:#FBEFDC;--cream-deep:#F7E3C6;
+  --ink:#4A3B28;--ink-soft:#8A7560;--line:#EFD9B6;--paper:#FFFCF7;--ok:#5BB97E;--red:#D9534F}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:"M PLUS Rounded 1c","Hiragino Maru Gothic ProN",system-ui,sans-serif;
+  line-height:1.7;-webkit-text-size-adjust:100%}
+header{background:linear-gradient(135deg,var(--orange),var(--orange-deep));color:#fff;padding:13px 16px;text-align:center}
+header h1{margin:0;font-size:18px;font-weight:800}
+header p{margin:3px 0 0;font-size:12px;opacity:.95}
+main{max-width:760px;margin:0 auto;padding:12px 12px 40px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:13px;margin-bottom:12px}
+h2{font-size:15.5px;margin:0 0 10px;font-weight:800}
+button{font:inherit;cursor:pointer}
+.btn{border:0;border-radius:13px;padding:13px 14px;font-weight:800;font-size:15px;color:#fff;background:var(--orange)}
+.btn.big{width:100%;min-height:56px;font-size:17px}
+.btn.g{background:var(--ok)} .btn.r{background:var(--red)}
+.btn2{border:2px solid var(--line);background:#fff;color:var(--ink);border-radius:12px;padding:10px 12px;font-weight:700;font-size:13.5px}
+.btn:disabled,.btn2:disabled{opacity:.4;cursor:not-allowed}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+textarea,input[type=text],select{width:100%;border:2px solid var(--line);border-radius:12px;padding:11px;
+  font:inherit;font-size:15px;background:#fff;color:var(--ink)}
+textarea{min-height:140px;line-height:1.8;resize:vertical}
+label.f{display:block;font-size:12.5px;font-weight:800;margin:10px 0 4px}
+.note{font-size:12.5px;color:var(--ink-soft);margin:8px 0 0}
+.hide{display:none!important}
+
+/* 読み上げ画面 */
+.play{background:var(--cream);border:2px solid var(--line);border-radius:16px;padding:16px 12px;text-align:center}
+.count{font-size:12.5px;font-weight:800;color:var(--ink-soft)}
+.fuda{font-size:26px;font-weight:800;line-height:1.6;margin:12px 0;min-height:96px;
+  display:flex;align-items:center;justify-content:center;word-break:break-word}
+.fuda.masked{color:transparent;text-shadow:0 0 16px rgba(74,59,40,.45);user-select:none}
+.speaking{color:var(--orange-deep)}
+.bar{height:6px;background:var(--cream-deep);border-radius:99px;overflow:hidden;margin:10px 0 4px}
+.bar>i{display:block;height:100%;background:var(--orange);border-radius:99px;transition:width .25s}
+
+/* 一覧 */
+.list{max-height:270px;overflow-y:auto;border:1px solid var(--line);border-radius:12px}
+.item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--line);font-size:14px}
+.item:last-child{border-bottom:0}
+.item .n{font-size:11.5px;color:var(--ink-soft);min-width:26px;font-weight:800}
+.item .t{flex:1;word-break:break-word}
+.item .x{border:0;background:transparent;color:var(--red);font-weight:800;font-size:16px;padding:2px 6px}
+.empty{padding:20px 12px;text-align:center;color:var(--ink-soft);font-size:13.5px}
+
+/* 広告 */
+.ad-slot{margin:14px 0 4px;padding-top:12px;border-top:1px solid var(--line);text-align:center}
+.ad-label{font-size:10.5px;letter-spacing:.14em;color:var(--ink-soft);margin-bottom:5px}
+.ad-slot ins.adsbygoogle{display:block;width:320px;height:100px;margin:0 auto}
+@media(min-width:760px){.ad-slot ins.adsbygoogle{width:728px;height:90px}}
+footer{text-align:center;padding:20px 14px 26px;font-size:12px;color:var(--ink-soft)}
+</style>
+</head>
+<body>
+<header>
+  <h1>かるた読み上げ</h1>
+  <p>手持ちの札を登録すれば、読み手がいなくても遊べます</p>
+</header>
+
+<main>
+  <!-- 遊ぶ -->
+  <section class="card" id="secPlay">
+    <div class="play">
+      <div class="count" id="count">まず札を登録してください</div>
+      <div class="fuda" id="fuda">－</div>
+      <div class="bar"><i id="prog" style="width:0"></i></div>
+      <button class="btn big" id="btnNext" type="button" disabled>読み上げる</button>
+      <div class="row" style="margin-top:8px">
+        <button class="btn2" id="btnAgain" type="button" disabled>もう一度</button>
+        <button class="btn2" id="btnReset" type="button" disabled>最初から</button>
+      </div>
+      <p class="note" id="playNote"></p>
+    </div>
+  </section>
+
+  <!-- 設定 -->
+  <section class="card">
+    <h2>読み方</h2>
+    <div class="row">
+      <div>
+        <label class="f" for="voice">声</label>
+        <select id="voice"></select>
+        <button class="btn2" id="btnTry" type="button" style="width:100%;margin-top:6px">この声を聞く</button>
+      </div>
+      <div>
+        <label class="f" for="rate">速さ <span id="rateV">1.0</span></label>
+        <input type="range" id="rate" min="0.5" max="1.5" step="0.1" value="0.9" style="width:100%">
+      </div>
+    </div>
+    <p class="note" id="voiceNote"></p>
+    <label class="f"><input type="checkbox" id="maskFuda"> 読み札の文字を隠す（音だけで取る）</label>
+    <label class="f"><input type="checkbox" id="twice" checked> 同じ札を2回読む（かるたの作法）</label>
+  </section>
+
+  <!-- 札の登録 -->
+  <section class="card">
+    <h2>札を登録する</h2>
+    <label class="f" for="setName">かるたの名前</label>
+    <input type="text" id="setName" placeholder="例: 学校の宿題かるた" autocomplete="off">
+    <label class="f" for="bulk">読み上げ文（1行に1枚）</label>
+    <textarea id="bulk" placeholder="いぬもあるけばぼうにあたる&#10;ろんよりしょうこ&#10;はなよりだんご"></textarea>
+    <p class="note">スマホで撮った写真から文字を取り込むには、iPhoneなら写真アプリの「テキストを読み取る」、Androidならレンズでコピーして、ここに貼り付けてください。まとめて貼っても1行ずつ札になります。</p>
+    <div class="row" style="margin-top:10px">
+      <button class="btn g" id="btnSave" type="button">この内容で保存</button>
+      <button class="btn2" id="btnClearAll" type="button">全部消す</button>
+    </div>
+  </section>
+
+  <!-- 一覧 -->
+  <section class="card">
+    <h2>登録した札 <span id="num" style="color:var(--ink-soft);font-size:13px"></span></h2>
+    <div class="list" id="list"><div class="empty">まだ札がありません</div></div>
+
+    <div class="ad-slot" id="ad-after-list">
+      <div class="ad-label">広告</div>
+      <ins class="adsbygoogle" style="display:block"
+           data-ad-client="ca-pub-1298304917726270"
+           data-ad-slot="2937937957"
+           data-ad-format="horizontal"
+           data-full-width-responsive="false"></ins>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>登録した札はこの端末の中だけに保存されます。外部に送信しません。</p>
+</footer>
+<script>
+
+const $ = (id) => document.getElementById(id);
+const KEY = 'ninja-karuta-v1';
+
+let state = { name: '', cards: [], voice: '', rate: 0.9, mask: false, twice: true };
+let deck = [];        // まだ読んでいない札の番号（山札）
+let current = -1;     // いま読んだ札
+
+/* ===== 保存 ===== */
+function load(){
+  try {
+    const j = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (j && Array.isArray(j.cards)) state = Object.assign(state, j);
+  } catch (e) {}
+}
+function save(){
+  try { localStorage.setItem(KEY, JSON.stringify(state)); }
+  catch (e) { alert('保存できませんでした。端末の空き容量をご確認ください。'); }
+}
+
+/* ===== 読み上げ ===== */
+let voices = [];
+// 端末が持っている日本語の声を並べる。名前は「Eddy (日本語（日本）)」のように
+// 長くて分かりにくいので、括弧の中を落として短くする。
+function prettyName(n){ return n.replace(/\s*[（(].*$/, '').trim() || n; }
+function loadVoices(){
+  voices = speechSynthesis.getVoices().filter(v => /^ja/i.test(v.lang));
+  const sel = $('voice');
+  if (!voices.length) {
+    sel.innerHTML = '<option value="">日本語の声が見つかりません</option>';
+    sel.disabled = true; $('btnTry').disabled = true;
+    $('voiceNote').textContent = 'この端末には日本語の音声が入っていないようです。端末の設定から日本語音声を追加すると読み上げられます。';
+    return;
+  }
+  sel.disabled = false; $('btnTry').disabled = false;
+  $('voiceNote').textContent = '';
+  sel.innerHTML = voices.map(v =>
+    '<option value="' + v.name + '">' + prettyName(v.name) + (v.localService ? '' : '（通信あり）') + '</option>').join('');
+  if (state.voice && voices.some(v => v.name === state.voice)) sel.value = state.voice;
+  else state.voice = sel.value;
+}
+function speak(text, onEnd){
+  if (!('speechSynthesis' in window)) { onEnd && onEnd(); return; }
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  const v = voices.find(x => x.name === state.voice);
+  if (v) u.voice = v;
+  u.lang = 'ja-JP';
+  u.rate = state.rate;
+  u.onend = () => onEnd && onEnd();
+  u.onerror = () => onEnd && onEnd();
+  speechSynthesis.speak(u);
+}
+// かるたの作法にならい、同じ札を2回読む
+function readCard(text){
+  $('fuda').classList.add('speaking');
+  const done = () => $('fuda').classList.remove('speaking');
+  if (state.twice) speak(text, () => setTimeout(() => speak(text, done), 350));
+  else speak(text, done);
+}
+
+/* ===== 山札 ===== */
+function shuffleDeck(){
+  deck = state.cards.map((_, i) => i);
+  for (let i = deck.length - 1; i > 0; i--) {          // フィッシャー・イェーツ
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+  current = -1;
+}
+function next(){
+  if (!state.cards.length) return;
+  if (!deck.length) {                                   // 読み切った
+    current = -1;
+    renderPlay('読み切りました。「最初から」で、もう一度遊べます。');
+    return;
+  }
+  current = deck.pop();
+  renderPlay();
+  readCard(state.cards[current]);
+}
+
+/* ===== 画面 ===== */
+function renderPlay(msg){
+  const total = state.cards.length;
+  const left = deck.length;
+  const read = total - left - (current >= 0 ? 1 : 0);
+  $('count').textContent = total
+    ? '全' + total + '枚　残り' + left + '枚'
+    : 'まず札を登録してください';
+  const f = $('fuda');
+  f.textContent = current >= 0 ? state.cards[current] : '－';
+  f.classList.toggle('masked', state.mask && current >= 0);
+  $('prog').style.width = total ? ((total - left) / total * 100) + '%' : '0';
+  $('btnNext').disabled = !total;
+  $('btnNext').textContent = current < 0 ? '読み上げる' : (left ? '次の札へ' : 'おしまい');
+  $('btnAgain').disabled = current < 0;
+  $('btnReset').disabled = !total;
+  $('playNote').textContent = msg || '';
+}
+function renderList(){
+  $('num').textContent = state.cards.length ? '（' + state.cards.length + '枚）' : '';
+  const el = $('list');
+  if (!state.cards.length) { el.innerHTML = '<div class="empty">まだ札がありません</div>'; return; }
+  el.innerHTML = state.cards.map((c, i) =>
+    '<div class="item"><span class="n">' + (i + 1) + '</span><span class="t"></span>' +
+    '<button class="x" type="button" data-i="' + i + '" aria-label="' + (i + 1) + '枚目を消す">×</button></div>'
+  ).join('');
+  // 札の文はテキストとして入れる（HTMLとして解釈させない）
+  el.querySelectorAll('.item .t').forEach((n, i) => { n.textContent = state.cards[i]; });
+  el.querySelectorAll('.x').forEach(b => b.onclick = () => {
+    state.cards.splice(+b.dataset.i, 1); save(); shuffleDeck(); renderList(); renderPlay(); syncBulk();
+  });
+}
+function syncBulk(){ $('bulk').value = state.cards.join('\n'); $('setName').value = state.name; }
+
+/* ===== 操作 ===== */
+$('btnNext').onclick = next;
+$('btnAgain').onclick = () => { if (current >= 0) readCard(state.cards[current]); };
+$('btnReset').onclick = () => { speechSynthesis.cancel(); shuffleDeck(); renderPlay('山札を混ぜ直しました。'); };
+$('btnSave').onclick = () => {
+  const lines = $('bulk').value.split('\n').map(s => s.trim()).filter(Boolean);
+  state.name = $('setName').value.trim();
+  state.cards = lines;
+  save(); shuffleDeck(); renderList(); renderPlay(lines.length ? lines.length + '枚を保存しました。' : '');
+};
+$('btnClearAll').onclick = () => {
+  if (!state.cards.length && !$('bulk').value) return;
+  if (!confirm('登録した札をすべて消します。よろしいですか。')) return;
+  state.cards = []; state.name = ''; save(); shuffleDeck(); renderList(); renderPlay(); syncBulk();
+};
+$('voice').onchange = (e) => { state.voice = e.target.value; save(); tryVoice(); };
+function tryVoice(){
+  const sample = state.cards[0] || 'いぬもあるけば ぼうにあたる';
+  speechSynthesis.cancel();
+  speak(sample);
+}
+$('btnTry').onclick = tryVoice;
+$('rate').oninput = (e) => { state.rate = +e.target.value; $('rateV').textContent = state.rate.toFixed(1); };
+$('rate').onchange = save;
+$('maskFuda').onchange = (e) => { state.mask = e.target.checked; save(); renderPlay(); };
+$('twice').onchange = (e) => { state.twice = e.target.checked; save(); };
+
+/* ===== 起動 ===== */
+load();
+syncBulk();
+$('rate').value = state.rate; $('rateV').textContent = state.rate.toFixed(1);
+$('maskFuda').checked = state.mask; $('twice').checked = state.twice;
+loadVoices();
+if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = loadVoices;
+shuffleDeck(); renderList(); renderPlay();
+
+// 広告は画面に近づいてから読み込む
+(function mountAd(){
+  const slot = $('ad-after-list'); if (!slot) return;
+  let done = false;
+  const go = () => { if (done) return; done = true;
+    try { (adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {} };
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { go(); io.disconnect(); } }),
+      { rootMargin: '300px 0px' });
+    io.observe(slot);
+  } else go();
+})();
+
+</script>
+
+<!-- WEBNINJA_UNIFIED_FOOTER -->
+<footer style="text-align:center;padding:2rem 1rem 2.5rem;font-size:0.78rem;color:#94a3b8;line-height:2;border-top:1px solid #f0e6d2;margin-top:2.5rem;background:#fffcf7;">
+  <div style="font-weight:800;color:#8b6b3d;font-size:0.85rem;margin-bottom:0.4rem;">web忍者の砦</div>
+  <div>
+    <a href="https://kkpwebninja.com/" target="_blank" rel="noopener" style="color:#8b6b3d;text-decoration:none;margin:0 0.5rem;">本丸トップ</a>·
+    <a href="https://privacypolicy.kkpwebninja.com/" target="_blank" rel="noopener" style="color:#8b6b3d;text-decoration:none;margin:0 0.5rem;">プライバシーポリシー</a>·
+    <a href="https://kkpwebninja.com/otoiawase" target="_blank" rel="noopener" style="color:#8b6b3d;text-decoration:none;margin:0 0.5rem;">お問い合わせ</a>·
+    <a href="https://x.com/kkp_webninja" target="_blank" rel="noopener" style="color:#8b6b3d;text-decoration:none;margin:0 0.5rem;">@kkp_webninja</a>
+  </div>
+  <div style="margin-top:0.5rem;color:#bfa97a;">© 2025-2026 web忍者の砦</div>
+</footer>
+</body>
+</html>
