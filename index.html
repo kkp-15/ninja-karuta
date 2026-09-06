@@ -128,6 +128,11 @@ label.f{display:block;font-size:12.5px;font-weight:800;margin:10px 0 4px}
 .list{max-height:340px}
 details{border-top:1px solid var(--line);margin-top:12px}
 details>summary{cursor:pointer;font-weight:800;font-size:13.5px;padding:10px 0 6px;color:var(--orange-deep)}
+.howto{margin-top:14px;padding:11px 12px;background:var(--cream);border:1px solid var(--line);border-radius:12px}
+.howto>b{display:block;font-size:13.5px;margin-bottom:4px}
+.howto ol{margin:6px 0 0;padding-left:1.3em;font-size:13.5px;line-height:1.95}
+.howto ol li{margin:0 0 2px}
+.howto .note{margin-top:9px}
 footer{text-align:center;padding:20px 14px 26px;font-size:12px;color:var(--ink-soft)}
 </style>
 </head>
@@ -206,11 +211,25 @@ footer{text-align:center;padding:20px 14px 26px;font-size:12px;color:var(--ink-s
     <details>
       <summary>まとめて貼り付ける（写真から読み取った文字など）</summary>
       <textarea id="bulk" placeholder="アメリカ（あ）&#10;イギリス（い）&#10;いぬもあるけばぼうにあたる（い）"></textarea>
-      <p class="note"><b>取り札の文字</b>は、うしろに（　）で書いてください。例:「アメリカ（あ）」。「あ,アメリカ」のように前に書いても通ります。省略しても遊べます。</p>
-      <p class="note">スマホで撮った写真から文字を取り込むには、iPhoneなら写真アプリの「テキストを読み取る」、Androidならレンズでコピーして、ここに貼り付けてください。1行が1枚になります。</p>
+      <p class="note"><b>1行が1枚</b>になります。<b>取り札の文字</b>は、うしろに（　）で書いてください。例:「アメリカ（あ）」。「あ,アメリカ」のように前に書いても通ります。空のままでも遊べます（あとから下の一覧で入れられます）。</p>
       <div class="row" style="margin-top:10px">
         <button class="btn g" id="btnBulkAdd" type="button">いまの札に足す</button>
         <button class="btn2" id="btnBulkReplace" type="button">置き換える</button>
+      </div>
+
+      <div class="howto">
+        <b>札を打ち込まずに、写真から読み取る</b>
+        <p class="note" style="margin:0 0 6px">Androidでも iPhone でも、Googleアプリが入っていれば同じ手順です。</p>
+        <ol>
+          <li>Googleアプリを開いて、検索欄の右にある<b>カメラのマーク</b>（Googleレンズ）を押す</li>
+          <li>かるたの札を写す</li>
+          <li>写った文字を押すと選べます。「テキスト」や「文字」の切り替えがあるときは、それを選んでください</li>
+          <li><b>「すべて選択」→「コピー」</b>を押す</li>
+          <li>このページに戻り、上の欄を長押しして<b>「ペースト」</b></li>
+        </ol>
+        <p class="note"><b>iPhoneはGoogleアプリがなくても読み取れます。</b>カメラや写真アプリで札を写すと、画面の右下に<b>枠の中に3本線</b>のマークが出ます。それを押すと文字を選べるので、「コピー」して同じように貼り付けてください。</p>
+        <p class="note"><b>札は縦に並べて写す</b>と、1枚ずつ別の行になります。横に並べると1行にまとまってしまうことがあります。</p>
+        <p class="note">余計な行が混じっても大丈夫です。貼り付けたあと、下の一覧から1枚ずつ消したり直したりできます。</p>
       </div>
     </details>
   </section>
