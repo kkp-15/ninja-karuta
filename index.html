@@ -8,6 +8,7 @@
 - 単一HTML / フレームワークなし / Cloudflare Pages
 - 読み上げは Web Speech API。日本語音声は端末内蔵なので通信不要
 - 保存は localStorage のみ。サーバに送らない（登録した札は端末から出ない）
+- かるたは何組でも持てる（sets[] と activeId）。v1の1組だけの保存からは自動で移す
 - 山札モデル：一度読んだ札は戻さない。重複しないのが実際のかるたと同じ
 ════════════════════════════
 -->
@@ -17,7 +18,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#F08A3C">
 <title>かるた読み上げ｜手持ちの札を登録して読み手いらずで遊べる無料アプリ</title>
-<meta name="description" content="かるたの読み札を登録すると、ランダムに読み上げてくれる無料アプリ。読み手がいなくても全員で取り合えます。自作かるた・百人一首・学習かるたに。登録不要、データは端末内のみ。">
+<meta name="description" content="かるたの読み札を登録すると、ランダムに読み上げてくれる無料アプリ。かるたは何組でも登録でき、1枚ずつその場で直せます。読み手がいなくても全員で取り合えます。登録不要、データは端末内のみ。">
 <link rel="canonical" href="https://karuta.kkpwebninja.com/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="かるた読み上げ｜読み手いらずで遊べる">
@@ -36,7 +37,7 @@
   "@type": "WebApplication",
   "name": "かるた読み上げ",
   "url": "https://karuta.kkpwebninja.com/",
-  "description": "手持ちのかるたの読み札を登録すると、ランダムに読み上げてくれる無料アプリ。読み手がいなくても全員で取り合えます。登録した札は端末内にのみ保存されます。",
+  "description": "手持ちのかるたの読み札を登録すると、ランダムに読み上げてくれる無料アプリ。かるたは何組でも登録して切り替えられます。読み手がいなくても全員で取り合えます。登録した札は端末内にのみ保存されます。",
   "applicationCategory": "GameApplication",
   "operatingSystem": "Web",
   "offers": {"@type":"Offer","price":"0","priceCurrency":"JPY"},
@@ -115,6 +116,18 @@ label.f{display:block;font-size:12.5px;font-weight:800;margin:10px 0 4px}
 .ad-label{font-size:10.5px;letter-spacing:.14em;color:var(--ink-soft);margin-bottom:5px}
 .ad-slot ins.adsbygoogle{display:block;width:320px;height:100px;margin:0 auto}
 @media(min-width:760px){.ad-slot ins.adsbygoogle{width:728px;height:90px}}
+/* かるたの切り替え・1枚ずつの追加と編集 */
+.setbar{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+.addrow{display:grid;grid-template-columns:1fr 74px auto;gap:8px;align-items:center}
+.item .ti{flex:1;min-width:0;border:1.5px solid var(--line);border-radius:9px;
+  padding:7px 8px;font:inherit;font-size:14px;background:#fff;color:var(--ink)}
+.item .ki{width:52px;flex:none;border:1.5px solid var(--line);border-radius:9px;
+  padding:7px 3px;font:inherit;font-size:14px;text-align:center;
+  background:#fff;color:var(--orange-deep);font-weight:800}
+.item .ti:focus,.item .ki:focus{outline:2px solid var(--orange);outline-offset:-2px;border-color:var(--orange)}
+.list{max-height:340px}
+details{border-top:1px solid var(--line);margin-top:12px}
+details>summary{cursor:pointer;font-weight:800;font-size:13.5px;padding:10px 0 6px;color:var(--orange-deep)}
 footer{text-align:center;padding:20px 14px 26px;font-size:12px;color:var(--ink-soft)}
 </style>
 </head>
@@ -164,24 +177,48 @@ footer{text-align:center;padding:20px 14px 26px;font-size:12px;color:var(--ink-s
     <label class="f"><input type="checkbox" id="twice" checked> 同じ札を2回読む（かるたの作法）</label>
   </section>
 
-  <!-- 札の登録 -->
+  <!-- かるたを選ぶ -->
   <section class="card">
-    <h2>札を登録する</h2>
-    <label class="f" for="setName">かるたの名前</label>
-    <input type="text" id="setName" placeholder="例: 学校の宿題かるた" autocomplete="off">
-    <label class="f" for="bulk">読み上げ文（1行に1枚）</label>
-    <textarea id="bulk" placeholder="アメリカ（あ）&#10;イギリス（い）&#10;いぬもあるけばぼうにあたる（い）"></textarea>
-    <p class="note"><b>取り札の文字</b>は、うしろに（　）で書いてください。例:「アメリカ（あ）」。「あ,アメリカ」のように前に書いても通ります。省略しても遊べます。</p>
-    <p class="note">スマホで撮った写真から文字を取り込むには、iPhoneなら写真アプリの「テキストを読み取る」、Androidならレンズでコピーして、ここに貼り付けてください。まとめて貼っても1行ずつ札になります。</p>
-    <div class="row" style="margin-top:10px">
-      <button class="btn g" id="btnSave" type="button">この内容で保存</button>
-      <button class="btn2" id="btnClearAll" type="button">全部消す</button>
+    <h2>かるたを選ぶ</h2>
+    <div class="setbar">
+      <select id="setSel" aria-label="遊ぶかるた"></select>
+      <button class="btn2" id="btnNewSet" type="button">新しく作る</button>
     </div>
+    <label class="f" for="setName">このかるたの名前</label>
+    <input type="text" id="setName" placeholder="例: 学校の宿題かるた" autocomplete="off">
+    <div class="row" style="margin-top:10px">
+      <button class="btn2" id="btnCopySet" type="button">複製する</button>
+      <button class="btn2" id="btnDelSet" type="button">このかるたを消す</button>
+    </div>
+    <p class="note">かるたは何組でも持てます。上の欄で切り替えると、その組で遊べます。</p>
+  </section>
+
+  <!-- 札を足す -->
+  <section class="card">
+    <h2>札を足す</h2>
+    <div class="addrow">
+      <input type="text" id="addT" placeholder="読み上げる文" autocomplete="off">
+      <input type="text" id="addK" placeholder="取札" maxlength="3" autocomplete="off">
+      <button class="btn g" id="btnAdd" type="button">追加</button>
+    </div>
+    <p class="note">Enterでも足せます。取り札の文字（あ・い など）は空のままでも遊べます。</p>
+
+    <details>
+      <summary>まとめて貼り付ける（写真から読み取った文字など）</summary>
+      <textarea id="bulk" placeholder="アメリカ（あ）&#10;イギリス（い）&#10;いぬもあるけばぼうにあたる（い）"></textarea>
+      <p class="note"><b>取り札の文字</b>は、うしろに（　）で書いてください。例:「アメリカ（あ）」。「あ,アメリカ」のように前に書いても通ります。省略しても遊べます。</p>
+      <p class="note">スマホで撮った写真から文字を取り込むには、iPhoneなら写真アプリの「テキストを読み取る」、Androidならレンズでコピーして、ここに貼り付けてください。1行が1枚になります。</p>
+      <div class="row" style="margin-top:10px">
+        <button class="btn g" id="btnBulkAdd" type="button">いまの札に足す</button>
+        <button class="btn2" id="btnBulkReplace" type="button">置き換える</button>
+      </div>
+    </details>
   </section>
 
   <!-- 一覧 -->
   <section class="card">
     <h2>登録した札 <span id="num" style="color:var(--ink-soft);font-size:13px"></span></h2>
+    <p class="note" style="margin:0 0 8px">文字はその場で直せます。直したところから自動で保存されます。</p>
     <div class="list" id="list"><div class="empty">まだ札がありません</div></div>
 
     <div class="ad-slot" id="ad-after-list">
@@ -201,24 +238,60 @@ footer{text-align:center;padding:20px 14px 26px;font-size:12px;color:var(--ink-s
 <script>
 
 const $ = (id) => document.getElementById(id);
-const KEY = 'ninja-karuta-v1';
+const KEY = 'ninja-karuta-v2';
+const OLDKEY = 'ninja-karuta-v1';
 
-let state = { name: '', cards: [], voice: '', rate: 0.9, mask: false, twice: true };
+// かるたは何組でも持てる。sets に並べ、activeId が「いま遊ぶ組」。
+let state = { sets: [], activeId: '', voice: '', rate: 0.9, mask: false, twice: true };
 let deck = [];        // まだ読んでいない札の番号（山札）
 let current = -1;     // いま読んだ札
 let revealed = false; // 取り札の文字を見せているか
 
+function newId(){ return 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function blankSet(name){ return { id: newId(), name: name || '', cards: [] }; }
+function active(){ return state.sets.find(s => s.id === state.activeId) || state.sets[0]; }
+function cards(){ const a = active(); return a ? a.cards : []; }
+
 /* ===== 保存 ===== */
-function load(){
-  try {
-    const j = JSON.parse(localStorage.getItem(KEY) || 'null');
-    if (j && Array.isArray(j.cards)) {
-      // 以前は札を文字列で持っていた。取り札の文字を足したので形を揃える。
-      j.cards = j.cards.map(c => typeof c === 'string' ? { t: c, k: '' } : c);
-      state = Object.assign(state, j);
-    }
-  } catch (e) {}
+function fixCards(list){
+  // 昔は札を文字列で持っていた。取り札の文字を足したので形を揃える。
+  return (list || []).map(c => typeof c === 'string' ? { t: c, k: '' } : { t: c.t || '', k: c.k || '' });
 }
+function load(){
+  let j = null;
+  try { j = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) {}
+  if (j && Array.isArray(j.sets)) {
+    state = Object.assign(state, j);
+  } else {
+    // v1は1組しか持てなかった。その1組を引き継ぐ（古い保存は消さずに残す）。
+    let old = null;
+    try { old = JSON.parse(localStorage.getItem(OLDKEY) || 'null'); } catch (e) {}
+    if (old && Array.isArray(old.cards)) {
+      state.sets = [{ id: newId(), name: old.name || 'かるた', cards: fixCards(old.cards) }];
+      if (old.voice) state.voice = old.voice;
+      if (typeof old.rate === 'number') state.rate = old.rate;
+      state.mask = !!old.mask;
+      state.twice = old.twice !== false;
+    }
+  }
+  if (!Array.isArray(state.sets) || !state.sets.length) state.sets = [blankSet('')];
+  state.sets.forEach(s => { if (!s.id) s.id = newId(); s.cards = fixCards(s.cards); });
+  if (!state.sets.some(s => s.id === state.activeId)) state.activeId = state.sets[0].id;
+}
+let saveWarned = false;
+function save(){
+  try { localStorage.setItem(KEY, JSON.stringify(state)); saveWarned = false; }
+  catch (e) {
+    // 打つたびに save() を呼ぶので、出せば毎回止まってしまう。1度だけ知らせる。
+    if (saveWarned) return;
+    saveWarned = true;
+    alert('この端末では札を保存できません。ブラウザがプライベートモードか、サイトのデータを保存しない設定になっているようです。'
+        + '今いる画面では遊べますが、閉じると消えます。');
+  }
+}
+// 入力中は毎文字書き込まず、少しだけまとめる
+let saveTimer = 0;
+function saveSoon(){ clearTimeout(saveTimer); saveTimer = setTimeout(save, 250); }
 
 /* 1行を「読み上げ文」と「取り札の文字」に分ける。
    書き方は自由：アメリカ（あ）／アメリカ(あ)／あ,アメリカ／あ、アメリカ／あ：アメリカ／あ アメリカ
@@ -234,11 +307,6 @@ function parseLine(line){
   if (m) return { t: m[2].trim(), k: m[1].trim() };
   // ③ 区切りが無ければ、文字は未設定
   return { t: s, k: '' };
-}
-function lineOf(c){ return c.k ? c.t + '（' + c.k + '）' : c.t; }
-function save(){
-  try { localStorage.setItem(KEY, JSON.stringify(state)); }
-  catch (e) { alert('保存できませんでした。端末の空き容量をご確認ください。'); }
 }
 
 /* ===== 読み上げ ===== */
@@ -284,7 +352,7 @@ function readCard(text){
 
 /* ===== 山札 ===== */
 function shuffleDeck(){
-  deck = state.cards.map((_, i) => i);
+  deck = cards().map((_, i) => i);
   for (let i = deck.length - 1; i > 0; i--) {          // フィッシャー・イェーツ
     const j = Math.floor(Math.random() * (i + 1));
     [deck[i], deck[j]] = [deck[j], deck[i]];
@@ -292,7 +360,8 @@ function shuffleDeck(){
   current = -1;
 }
 function next(){
-  if (!state.cards.length) return;
+  const cs = cards();
+  if (!cs.length) return;
   if (!deck.length) {                                   // 読み切った
     current = -1;
     renderPlay('読み切りました。「最初から」で、もう一度遊べます。');
@@ -301,30 +370,31 @@ function next(){
   current = deck.pop();
   revealed = false;
   renderPlay();
-  readCard(state.cards[current].t);
+  readCard(cs[current].t);
 }
 
 /* ===== 画面 ===== */
 function renderPlay(msg){
-  const total = state.cards.length;
+  const cs = cards();
+  const total = cs.length;
   const left = deck.length;
-  const read = total - left - (current >= 0 ? 1 : 0);
+  if (current >= total) current = -1;                   // 編集で札が減ったとき
   $('count').textContent = total
     ? '全' + total + '枚　残り' + left + '枚'
     : 'まず札を登録してください';
   const f = $('fuda');
-  f.textContent = current >= 0 ? state.cards[current].t : '－';
+  f.textContent = current >= 0 ? cs[current].t : '－';
   f.classList.toggle('masked', state.mask && current >= 0);
 
   // 取り札は伏せておく。取ったあとの答え合わせに使うもの。
   const kc = $('kchar'), kb = $('btnShowK');
-  const k = current >= 0 ? (state.cards[current].k || '') : '';
+  const k = current >= 0 ? (cs[current].k || '') : '';
   kc.textContent = k || '－';
   const canShow = current >= 0 && !!k;
   kc.classList.toggle('hidden', canShow && !revealed);
   kb.disabled = !canShow;
   kb.textContent = revealed ? '隠す' : '答えを見る';
-  $('kwrap').style.display = state.cards.some(c => c.k) ? '' : 'none';
+  $('kwrap').style.display = cs.some(c => c.k) ? '' : 'none';
   $('prog').style.width = total ? ((total - left) / total * 100) + '%' : '0';
   $('btnNext').disabled = !total;
   $('btnNext').textContent = current < 0 ? '読み上げる' : (left ? '次の札へ' : 'おしまい');
@@ -332,45 +402,129 @@ function renderPlay(msg){
   $('btnReset').disabled = !total;
   $('playNote').textContent = msg || '';
 }
+function setLabel(s){
+  const n = s.cards.length;
+  return (s.name || '名前のないかるた') + '（' + (n ? n + '枚' : '空') + '）';
+}
+function renderSets(){
+  const sel = $('setSel');
+  sel.innerHTML = '';
+  state.sets.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s.id;
+    o.textContent = setLabel(s);        // textContent なので名前にタグが入っても安全
+    sel.appendChild(o);
+  });
+  sel.value = state.activeId;
+  const a = active();
+  if ($('setName') !== document.activeElement) $('setName').value = a ? a.name : '';
+}
 function renderList(){
-  $('num').textContent = state.cards.length ? '（' + state.cards.length + '枚）' : '';
+  const cs = cards();
+  $('num').textContent = cs.length ? '（' + cs.length + '枚）' : '';
   const el = $('list');
-  if (!state.cards.length) { el.innerHTML = '<div class="empty">まだ札がありません</div>'; return; }
-  el.innerHTML = state.cards.map((c, i) =>
-    '<div class="item"><span class="n">' + (i + 1) + '</span><span class="k"></span><span class="t"></span>' +
-    '<button class="x" type="button" data-i="' + i + '" aria-label="' + (i + 1) + '枚目を消す">×</button></div>'
-  ).join('');
-  // 札の文はテキストとして入れる（HTMLとして解釈させない）
-  el.querySelectorAll('.item .t').forEach((n, i) => { n.textContent = state.cards[i].t; });
-  el.querySelectorAll('.item .k').forEach((n, i) => { n.textContent = state.cards[i].k || '－'; });
-  el.querySelectorAll('.x').forEach(b => b.onclick = () => {
-    state.cards.splice(+b.dataset.i, 1); save(); shuffleDeck(); renderList(); renderPlay(); syncBulk();
+  el.innerHTML = '';
+  if (!cs.length) {
+    el.innerHTML = '<div class="empty">まだ札がありません。上の欄から足してください。</div>';
+    return;
+  }
+  cs.forEach((c, i) => {
+    const row = document.createElement('div'); row.className = 'item';
+    const n = document.createElement('span'); n.className = 'n'; n.textContent = String(i + 1);
+    const t = document.createElement('input');
+    t.type = 'text'; t.className = 'ti'; t.value = c.t;
+    t.setAttribute('aria-label', (i + 1) + '枚目の読み上げ文');
+    const k = document.createElement('input');
+    k.type = 'text'; k.className = 'ki'; k.value = c.k; k.maxLength = 3;
+    k.placeholder = '取札';
+    k.setAttribute('aria-label', (i + 1) + '枚目の取り札');
+    const x = document.createElement('button');
+    x.type = 'button'; x.className = 'x'; x.textContent = '×';
+    x.setAttribute('aria-label', (i + 1) + '枚目を消す');
+    // 打った時点で保存する。「保存」を押し忘れて消える事故をなくす。
+    t.oninput = () => { c.t = t.value; saveSoon(); };
+    k.oninput = () => { c.k = k.value; saveSoon(); };
+    t.onchange = () => renderSets();       // 枚数表示は変わらないが名前欄と揃える
+    k.onchange = () => renderPlay();       // 取り札欄を出すか消すかがここで決まる
+    x.onclick = () => { cs.splice(i, 1); save(); shuffleDeck(); renderAll(); };
+    row.appendChild(n); row.appendChild(t); row.appendChild(k); row.appendChild(x);
+    el.appendChild(row);
   });
 }
-function syncBulk(){ $('bulk').value = state.cards.map(lineOf).join('\n'); $('setName').value = state.name; }
+function renderAll(msg){ renderSets(); renderList(); renderPlay(msg); }
 
-/* ===== 操作 ===== */
+/* ===== 操作：遊ぶ ===== */
 $('btnShowK').onclick = () => { revealed = !revealed; renderPlay(); };
 $('btnNext').onclick = next;
-$('btnAgain').onclick = () => { if (current >= 0) readCard(state.cards[current].t); };
+$('btnAgain').onclick = () => { const cs = cards(); if (current >= 0 && cs[current]) readCard(cs[current].t); };
 $('btnReset').onclick = () => { speechSynthesis.cancel(); shuffleDeck(); renderPlay('山札を混ぜ直しました。'); };
-$('btnSave').onclick = () => {
-  const lines = $('bulk').value.split('\n').map(parseLine).filter(Boolean);
-  state.name = $('setName').value.trim();
-  state.cards = lines;
-  save(); shuffleDeck(); renderList(); const noK = lines.filter(c => !c.k).length;
-  renderPlay(lines.length
-    ? lines.length + '枚を保存しました。' + (noK ? '（うち' + noK + '枚は取り札の文字が未設定）' : '')
-    : '');
+
+/* ===== 操作：かるたの切り替え ===== */
+$('setSel').onchange = (e) => {
+  state.activeId = e.target.value; save(); speechSynthesis.cancel(); shuffleDeck(); renderAll();
 };
-$('btnClearAll').onclick = () => {
-  if (!state.cards.length && !$('bulk').value) return;
-  if (!confirm('登録した札をすべて消します。よろしいですか。')) return;
-  state.cards = []; state.name = ''; save(); shuffleDeck(); renderList(); renderPlay(); syncBulk();
+$('setName').oninput = () => { const a = active(); if (a) { a.name = $('setName').value; saveSoon(); } };
+$('setName').onchange = () => renderSets();
+$('btnNewSet').onclick = () => {
+  const s = blankSet('かるた' + (state.sets.length + 1));
+  state.sets.push(s); state.activeId = s.id;
+  save(); shuffleDeck(); renderAll('新しいかるたを作りました。名前を付けて札を足してください。');
+  $('setName').focus(); $('setName').select();
 };
+$('btnCopySet').onclick = () => {
+  const a = active(); if (!a) return;
+  const s = { id: newId(), name: (a.name || 'かるた') + 'のコピー', cards: a.cards.map(c => ({ t: c.t, k: c.k })) };
+  state.sets.push(s); state.activeId = s.id;
+  save(); shuffleDeck(); renderAll('複製しました。');
+};
+$('btnDelSet').onclick = () => {
+  const a = active(); if (!a) return;
+  if (!confirm('「' + (a.name || '名前のないかるた') + '」を消します。よろしいですか。')) return;
+  state.sets = state.sets.filter(s => s.id !== a.id);
+  if (!state.sets.length) state.sets = [blankSet('')];   // 空になっても1組は残す
+  state.activeId = state.sets[0].id;
+  save(); shuffleDeck(); renderAll('消しました。');
+};
+
+/* ===== 操作：札を足す・直す ===== */
+function addOne(){
+  const t = $('addT').value.trim();
+  if (!t) { $('addT').focus(); return; }
+  cards().push({ t: t, k: $('addK').value.trim() });
+  $('addT').value = ''; $('addK').value = '';
+  save(); shuffleDeck(); renderAll();
+  $('list').scrollTop = $('list').scrollHeight;
+  $('addT').focus();
+}
+$('btnAdd').onclick = addOne;
+['addT', 'addK'].forEach(id => {
+  $(id).onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); addOne(); } };
+});
+function bulkLines(){ return $('bulk').value.split('\n').map(parseLine).filter(Boolean); }
+function bulkNote(list){
+  const noK = list.filter(c => !c.k).length;
+  return list.length + '枚を読み込みました。' + (noK ? '（うち' + noK + '枚は取り札の文字が未設定）' : '');
+}
+$('btnBulkAdd').onclick = () => {
+  const ls = bulkLines();
+  if (!ls.length) return;
+  const a = active(); a.cards = a.cards.concat(ls);
+  $('bulk').value = '';
+  save(); shuffleDeck(); renderAll(bulkNote(ls));
+};
+$('btnBulkReplace').onclick = () => {
+  const ls = bulkLines();
+  const now = cards().length;
+  if (now && !confirm('いまの' + now + '枚を消して、貼り付けた内容に置き換えます。よろしいですか。')) return;
+  active().cards = ls;
+  save(); shuffleDeck(); renderAll(ls.length ? bulkNote(ls) : '空にしました。');
+};
+
+/* ===== 操作：読み方 ===== */
 $('voice').onchange = (e) => { state.voice = e.target.value; save(); tryVoice(); };
 function tryVoice(){
-  const sample = (state.cards[0] && state.cards[0].t) || 'いぬもあるけば ぼうにあたる';
+  const cs = cards();
+  const sample = (cs[0] && cs[0].t) || 'いぬもあるけば ぼうにあたる';
   speechSynthesis.cancel();
   speak(sample);
 }
@@ -382,12 +536,11 @@ $('twice').onchange = (e) => { state.twice = e.target.checked; save(); };
 
 /* ===== 起動 ===== */
 load();
-syncBulk();
 $('rate').value = state.rate; $('rateV').textContent = state.rate.toFixed(1);
 $('maskFuda').checked = state.mask; $('twice').checked = state.twice;
 loadVoices();
 if ('speechSynthesis' in window) speechSynthesis.onvoiceschanged = loadVoices;
-shuffleDeck(); renderList(); renderPlay();
+shuffleDeck(); renderAll();
 
 // 広告は画面に近づいてから読み込む
 (function mountAd(){
