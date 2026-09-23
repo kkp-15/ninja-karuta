@@ -134,6 +134,12 @@ details>summary{cursor:pointer;font-weight:800;font-size:13.5px;padding:10px 0 6
 .howto ol li{margin:0 0 2px}
 .howto .note{margin-top:9px}
 footer{text-align:center;padding:20px 14px 26px;font-size:12px;color:var(--ink-soft)}
+
+/* 見た目の調整（2026-09-24・AIっぽさを消す）: 影・グラデーション・大きな角丸・英字の飾り見出しをやめる（測定から生成し、機能に関わる部品は手で除外）。元のルールは上に残し上書き。 */
+body { background: #fff; }
+#secPlay, div.play, div.bar, section.card, div.howto, #list { border-radius: 8px; }
+#btnNext, #btnCopyAll { border-radius: 8px; }
+#prog, #btnAgain, #btnReset, #btnTry, #btnNewSet, #btnCopySet, #btnDelSet, #btnAdd, #btnBulkAdd, #btnBulkReplace { border-radius: 6px; }
 </style>
 </head>
 <body>
