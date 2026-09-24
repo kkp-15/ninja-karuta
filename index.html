@@ -110,6 +110,8 @@ label.f{display:block;font-size:12.5px;font-weight:800;margin:10px 0 4px}
 .item .t{flex:1;word-break:break-word}
 .item .x{border:0;background:transparent;color:var(--red);font-weight:800;font-size:16px;padding:2px 6px}
 .empty{padding:20px 12px;text-align:center;color:var(--ink-soft);font-size:13.5px}
+/* 札が0枚のときだけ出る挿し絵（2026-09-24・Codex制作・シリーズ共通）。1枚足すと一覧に置き換わる */
+.empty img{display:block;width:120px;height:auto;margin:0 auto 6px}
 
 /* 広告 */
 .ad-slot{margin:14px 0 4px;padding-top:12px;border-top:1px solid var(--line);text-align:center}
@@ -244,7 +246,7 @@ body { background: #fff; }
   <section class="card">
     <h2>登録した札 <span id="num" style="color:var(--ink-soft);font-size:13px"></span></h2>
     <p class="note" style="margin:0 0 8px">文字はその場で直せます。直したところから自動で保存されます。</p>
-    <div class="list" id="list"><div class="empty">まだ札がありません</div></div>
+    <div class="list" id="list"><div class="empty"><img src="/img/empty-karuta.webp" width="240" height="165" alt="" loading="lazy" decoding="async">まだ札がありません</div></div>
 
     <button class="btn2" id="btnCopyAll" type="button"
             style="width:100%;margin-top:10px">この札を書き出す（別の端末に移す）</button>
@@ -457,7 +459,7 @@ function renderList(){
   const el = $('list');
   el.innerHTML = '';
   if (!cs.length) {
-    el.innerHTML = '<div class="empty">まだ札がありません。上の欄から足してください。</div>';
+    el.innerHTML = '<div class="empty"><img src="/img/empty-karuta.webp" width="240" height="165" alt="" loading="lazy" decoding="async">まだ札がありません。上の欄から足してください。</div>';
     return;
   }
   cs.forEach((c, i) => {
