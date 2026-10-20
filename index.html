@@ -179,6 +179,20 @@ details>summary{color:var(--k-sumi);text-decoration:underline;text-decoration-co
 .item .ki{color:var(--k-shu)}
 .howto{background:var(--k-kinari);border:var(--k-bw-s) solid var(--k-sumi);border-radius:var(--k-r)}
 .howto>b{font-family:var(--k-brush);font-weight:400;letter-spacing:.1em}
+/* ===== 2026-10-20 清潔感（kkp-kit 17eac63 の方針）: 段の箱（3pxふち＋影）と箱の中の箱をやめ、罫線1本と余白に。影は押せるものだけ ===== */
+.card,section.card{background:none;border:0;border-top:var(--k-bw-s) solid var(--k-sumi);border-radius:0;box-shadow:none;padding:16px 2px 18px;margin-bottom:8px}
+#secPlay{border-top:0;padding-top:4px}
+.play{border:var(--k-bw-s) solid var(--k-sumi);box-shadow:none}
+.kchar{box-shadow:none}
+.bar{box-shadow:none}
+.bar>i{background:var(--k-orange)}
+.list{border:0;border-top:1px solid var(--k-line-soft);border-bottom:1px solid var(--k-line-soft);border-radius:0;background:none}
+.list:has(.k-empty){border:0;max-height:none}
+.item{border-bottom:1px solid var(--k-line-soft)}
+.empty.k-empty{padding:16px;text-align:left}
+.empty .k-empty-img{display:block;width:72px;margin:0}
+.howto{background:none;border:0;border-top:1px solid var(--k-line-soft);border-radius:0;padding:12px 2px 0}
+.ad-slot{border-top:1px solid var(--k-line-soft)}
 </style>
 <!-- kkp-rel-d4:start -->
 <style id="kkp-rel-d4">
@@ -298,7 +312,7 @@ details>summary{color:var(--k-sumi);text-decoration:underline;text-decoration-co
   <section class="card">
     <h2>登録した札 <span id="num" style="color:var(--ink-soft);font-size:13px"></span></h2>
     <p class="note" style="margin:0 0 8px">文字はその場で直せます。直したところから自動で保存されます。</p>
-    <div class="list" id="list"><div class="empty"><img src="/img/empty-karuta.webp" width="240" height="165" alt="" loading="lazy" decoding="async">まだ札がありません</div></div>
+    <div class="list" id="list"><div class="empty k-empty"><img class="k-empty-img" src="/img/empty-karuta.webp" width="240" height="165" alt="" loading="lazy" decoding="async"><div class="k-empty-body"><p class="k-empty-t">まだ札がありません</p><p class="k-empty-d">上の「札を足す」から1枚ずつ、またはまとめて貼り付けて足してください。</p></div></div></div>
 
     <button class="k-btn k-btn-sub" id="btnCopyAll" type="button"
             style="width:100%;margin-top:10px">この札を書き出す（別の端末に移す）</button>
@@ -511,7 +525,7 @@ function renderList(){
   const el = $('list');
   el.innerHTML = '';
   if (!cs.length) {
-    el.innerHTML = '<div class="empty"><img src="/img/empty-karuta.webp" width="240" height="165" alt="" loading="lazy" decoding="async">まだ札がありません。上の欄から足してください。</div>';
+    el.innerHTML = '<div class="empty k-empty"><img class="k-empty-img" src="/img/empty-karuta.webp" width="240" height="165" alt="" loading="lazy" decoding="async"><div class="k-empty-body"><p class="k-empty-t">まだ札がありません</p><p class="k-empty-d">上の「札を足す」から1枚ずつ、またはまとめて貼り付けて足してください。</p></div></div>';
     return;
   }
   cs.forEach((c, i) => {
