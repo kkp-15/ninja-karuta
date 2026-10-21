@@ -218,7 +218,7 @@ details>summary{color:var(--k-sumi);text-decoration:underline;text-decoration-co
 <header>
   <img class="d4-ninja" src="/kit/img/d4-ninja.webp" alt="" aria-hidden="true">
   <h1>かるた読み上げ</h1>
-  <p>インストール不要。手持ちの札を登録すれば、読み手がいなくても遊べます</p>
+  <p>手持ちの札を登録すれば、読み手なしで遊べます</p>
 </header>
 
 <main>
@@ -257,8 +257,8 @@ details>summary{color:var(--k-sumi);text-decoration:underline;text-decoration-co
       </div>
     </div>
     <p class="note" id="voiceNote"></p>
-    <label class="f"><input type="checkbox" id="maskFuda"> 読み札の文字を隠す（音だけで取る）</label>
-    <label class="f"><input type="checkbox" id="twice" checked> 同じ札を2回読む（かるたの作法）</label>
+    <label class="f"><input type="checkbox" id="maskFuda"> 読み札の文字を隠す</label>
+    <label class="f"><input type="checkbox" id="twice" checked> 同じ札を2回読む</label>
   </section>
 
   <!-- かるたを選ぶ -->
@@ -274,7 +274,7 @@ details>summary{color:var(--k-sumi);text-decoration:underline;text-decoration-co
       <button class="k-btn k-btn-sub" id="btnCopySet" type="button">複製する</button>
       <button class="k-btn k-btn-sub" id="btnDelSet" type="button">このかるたを消す</button>
     </div>
-    <p class="note">かるたは何組でも持てます。上の欄で切り替えると、その組で遊べます。</p>
+    <p class="note">何組でも作れます。上の欄で切り替えます。</p>
   </section>
 
   <!-- 札を足す -->
@@ -285,12 +285,12 @@ details>summary{color:var(--k-sumi);text-decoration:underline;text-decoration-co
       <input type="text" id="addK" placeholder="取札" maxlength="3" autocomplete="off">
       <button class="k-btn k-btn-sm" id="btnAdd" type="button">追加</button>
     </div>
-    <p class="note">Enterでも足せます。取り札の文字（あ・い など）は空のままでも遊べます。</p>
+    <p class="note">Enterでも足せます。取り札の文字は空でも遊べます。</p>
 
     <details>
-      <summary>まとめて貼り付ける（写真から読み取った文字など）</summary>
+      <summary>まとめて貼り付ける</summary>
       <textarea id="bulk" placeholder="アメリカ（あ）&#10;イギリス（い）&#10;いぬもあるけばぼうにあたる（い）"></textarea>
-      <p class="note"><b>1行が1枚</b>になります。<b>取り札の文字</b>は、うしろに（　）で書いてください。例:「アメリカ（あ）」。「あ,アメリカ」のように前に書いても通ります。空のままでも遊べます（あとから下の一覧で入れられます）。</p>
+      <p class="note"><b>1行が1枚</b>です。取り札の文字は「アメリカ（あ）」のように書きます。空でも遊べます。</p>
       <div class="row" style="margin-top:10px">
         <button class="k-btn k-btn-sm" id="btnBulkAdd" type="button">いまの札に足す</button>
         <button class="k-btn k-btn-sub" id="btnBulkReplace" type="button">置き換える</button>
@@ -298,17 +298,13 @@ details>summary{color:var(--k-sumi);text-decoration:underline;text-decoration-co
 
       <div class="howto">
         <b>札を打ち込まずに、写真から読み取る</b>
-        <p class="note" style="margin:0 0 6px">Androidでも iPhone でも、Googleアプリが入っていれば同じ手順です。</p>
         <ol>
-          <li>Googleアプリを開いて、検索欄の右にある<b>カメラのマーク</b>（Googleレンズ）を押す</li>
-          <li>かるたの札を写す</li>
-          <li>写った文字を押すと選べます。「テキスト」や「文字」の切り替えがあるときは、それを選んでください</li>
-          <li><b>「すべて選択」→「コピー」</b>を押す</li>
+          <li>Googleアプリの検索欄にある<b>カメラのマーク</b>で札を写す</li>
+          <li>文字を押して<b>「すべて選択」→「コピー」</b></li>
           <li>このページに戻り、上の欄を長押しして<b>「ペースト」</b></li>
         </ol>
-        <p class="note"><b>iPhoneはGoogleアプリがなくても読み取れます。</b>カメラや写真アプリで札を写すと、画面の右下に<b>枠の中に3本線</b>のマークが出ます。それを押すと文字を選べるので、「コピー」して同じように貼り付けてください。</p>
-        <p class="note"><b>札は縦に並べて写す</b>と、1枚ずつ別の行になります。横に並べると1行にまとまってしまうことがあります。</p>
-        <p class="note">余計な行が混じっても大丈夫です。貼り付けたあと、下の一覧から1枚ずつ消したり直したりできます。</p>
+        <p class="note">iPhoneはカメラや写真アプリでも読めます。右下の<b>枠に3本線</b>のマークを押して「コピー」します。</p>
+        <p class="note"><b>札は縦に並べて写す</b>と1枚ずつ別の行になります。余計な行は下の一覧で消せます。</p>
       </div>
     </details>
   </section>
@@ -316,8 +312,8 @@ details>summary{color:var(--k-sumi);text-decoration:underline;text-decoration-co
   <!-- 一覧 -->
   <section class="card">
     <h2>登録した札 <span id="num" style="color:var(--ink-soft);font-size:14px"></span></h2>
-    <p class="note" style="margin:0 0 8px">文字はその場で直せます。直したところから自動で保存されます。</p>
-    <div class="list" id="list"><div class="empty k-empty"><img class="k-empty-img" src="/img/empty-karuta.webp" width="240" height="165" alt="" loading="lazy" decoding="async"><div class="k-empty-body"><p class="k-empty-t">まだ札がありません</p><p class="k-empty-d">上の「札を足す」から1枚ずつ、またはまとめて貼り付けて足してください。</p></div></div></div>
+    <p class="note" style="margin:0 0 8px">その場で直せます。自動で保存されます。</p>
+    <div class="list" id="list"><div class="empty k-empty"><img class="k-empty-img" src="/img/empty-karuta.webp" width="240" height="165" alt="" loading="lazy" decoding="async"><div class="k-empty-body"><p class="k-empty-t">まだ札がありません</p><p class="k-empty-d">上の「札を足す」から足してください。</p></div></div></div>
 
     <button class="k-btn k-btn-sub" id="btnCopyAll" type="button"
             style="width:100%;margin-top:10px">この札を書き出す（別の端末に移す）</button>
@@ -335,7 +331,7 @@ details>summary{color:var(--k-sumi);text-decoration:underline;text-decoration-co
 </main>
 
 <footer>
-  <p>登録した札はこの端末の中だけに保存されます。外部に送信しません。</p>
+  <p>札はこの端末の中だけに保存し、外には送りません。</p>
 </footer>
 <script>
 
@@ -425,7 +421,7 @@ function loadVoices(){
   if (!voices.length) {
     sel.innerHTML = '<option value="">日本語の声が見つかりません</option>';
     sel.disabled = true; $('btnTry').disabled = true;
-    $('voiceNote').textContent = 'この端末には日本語の音声が入っていないようです。端末の設定から日本語音声を追加すると読み上げられます。';
+    $('voiceNote').textContent = 'この端末には日本語の声が無いようです。端末の設定で日本語の音声を足すと読めます。';
     return;
   }
   sel.disabled = false; $('btnTry').disabled = false;
@@ -530,7 +526,7 @@ function renderList(){
   const el = $('list');
   el.innerHTML = '';
   if (!cs.length) {
-    el.innerHTML = '<div class="empty k-empty"><img class="k-empty-img" src="/img/empty-karuta.webp" width="240" height="165" alt="" loading="lazy" decoding="async"><div class="k-empty-body"><p class="k-empty-t">まだ札がありません</p><p class="k-empty-d">上の「札を足す」から1枚ずつ、またはまとめて貼り付けて足してください。</p></div></div>';
+    el.innerHTML = '<div class="empty k-empty"><img class="k-empty-img" src="/img/empty-karuta.webp" width="240" height="165" alt="" loading="lazy" decoding="async"><div class="k-empty-body"><p class="k-empty-t">まだ札がありません</p><p class="k-empty-d">上の「札を足す」から足してください。</p></div></div>';
     return;
   }
   cs.forEach((c, i) => {
@@ -628,7 +624,7 @@ $('btnCopyAll').onclick = () => {
   const text = cs.map(lineOf).join('\n');
   const done = (ok) => {
     note.textContent = ok
-      ? cs.length + '枚をコピーしました。移したい端末でこのページを開き、「まとめて貼り付ける」に貼ってください。かるたの名前は移らないので、向こうで付けてください。'
+      ? cs.length + '枚をコピーしました。移す先の端末でこのページを開き、「まとめて貼り付ける」に貼ってください。名前は移らないので、向こうで付けてください。'
       : 'この端末では自動でコピーできませんでした。「まとめて貼り付ける」を開くと同じ内容が出るので、長押しして「すべて選択」→「コピー」してください。';
     if (!ok) {
       const d = document.querySelector('details');
