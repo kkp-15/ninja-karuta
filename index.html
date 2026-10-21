@@ -171,6 +171,10 @@ textarea,input[type=text],input[type=number],select{border:var(--k-bw-s) solid v
 details>summary{color:var(--k-sumi);text-decoration:underline;text-decoration-color:var(--k-orange);text-decoration-thickness:2px;text-underline-offset:4px}
 .note a,.read a,.howto a{color:var(--k-sumi);font-weight:700;text-decoration:underline;text-decoration-color:var(--k-orange);text-decoration-thickness:2px;text-underline-offset:3px}
 .play{background:var(--k-kinari);border:var(--k-bw-s) solid var(--k-sumi);border-radius:var(--k-r)}
+/* 2026-10-21 見栄え: 速さのスライダーをオレンジに（標準の青をやめる）。札がないときは上の箱に k-empty の案内だけ出す */
+#rate{accent-color:var(--k-orange)}
+#secPlay:not(.is-empty) .play-empty{display:none}
+#secPlay.is-empty .play{display:none}
 .count{font-family:var(--k-bold);font-weight:400;color:var(--k-text-2)}
 .kchar{border:var(--k-bw) solid var(--k-sumi);border-radius:var(--k-r);color:var(--k-shu);font-family:var(--k-head);font-weight:800;box-shadow:var(--k-sh-s)}
 .kchar.hidden{border-color:var(--k-sumi);background:var(--k-kinari)}
@@ -224,6 +228,7 @@ details>summary{color:var(--k-sumi);text-decoration:underline;text-decoration-co
 <main>
   <!-- 遊ぶ -->
   <section class="card" id="secPlay">
+    <div class="k-empty play-empty"><img class="k-empty-img" src="/img/empty-karuta.webp" width="240" height="165" alt="" decoding="async"><div class="k-empty-body"><p class="k-empty-t">まだ札がありません</p><p class="k-empty-d">下の「札を足す」で読み札を入れると、ここで読み上げます。</p></div><a class="k-btn k-btn-sub" href="#secAdd">札を足す</a></div>
     <div class="play">
       <div class="count" id="count">まず札を登録してください</div>
       <div class="fuda" id="fuda">－</div>
@@ -278,7 +283,7 @@ details>summary{color:var(--k-sumi);text-decoration:underline;text-decoration-co
   </section>
 
   <!-- 札を足す -->
-  <section class="card">
+  <section class="card" id="secAdd">
     <h2>札を足す</h2>
     <div class="addrow">
       <input type="text" id="addT" placeholder="読み上げる文" autocomplete="off">
@@ -502,6 +507,7 @@ function renderPlay(msg){
   $('btnAgain').disabled = current < 0;
   $('btnReset').disabled = !total;
   $('playNote').textContent = msg || '';
+  $('secPlay').classList.toggle('is-empty', !total);
 }
 function setLabel(s){
   const n = s.cards.length;
