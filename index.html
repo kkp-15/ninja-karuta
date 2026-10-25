@@ -87,6 +87,8 @@ textarea,input[type=text],select{width:100%;border:2px solid var(--line);border-
   font:inherit;font-size:15px;background:#fff;color:var(--ink)}
 textarea{min-height:140px;line-height:1.8;resize:vertical}
 label.f{display:block;font-size:14px;font-weight:800;margin:10px 0 4px}
+label.f:has(input[type=checkbox]){display:flex;align-items:center;gap:8px;min-height:44px;margin:4px 0}
+label.f input[type=checkbox]{width:20px;height:20px;margin:0;flex:none}
 .note{font-size:14px;color:var(--ink-soft);margin:8px 0 0}
 .hide{display:none!important}
 
@@ -234,7 +236,7 @@ details>summary{color:var(--k-sumi);text-decoration:underline;text-decoration-co
 <main>
   <!-- 遊ぶ -->
   <section class="card" id="secPlay">
-    <div class="k-empty play-empty"><img class="k-empty-img" src="/img/empty-karuta.webp" width="240" height="165" alt="" decoding="async"><div class="k-empty-body"><p class="k-empty-t">まだ札がありません</p><p class="k-empty-d">下の「札を足す」で読み札を入れると、ここで読み上げます。</p></div><a class="k-btn k-btn-sub" href="#secAdd">札を足す</a></div>
+    <div class="k-empty play-empty"><img class="k-empty-img" src="/img/empty-karuta.webp" width="240" height="165" alt="" decoding="async"><div class="k-empty-body"><p class="k-empty-t">まだ札がありません</p><p class="k-empty-d">読み札を入れると、ここで読み上げます。</p></div><a class="k-btn k-btn-sub" href="#secAdd" onclick="setTimeout(function(){document.getElementById('addT').focus()},50)">札を足す</a></div>
     <div class="play">
       <div class="count" id="count">まず札を登録してください</div>
       <div class="fuda k-karuta k-karuta-yomi" id="fuda">－</div>
