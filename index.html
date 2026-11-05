@@ -250,7 +250,7 @@ details>summary{color:var(--k-sumi);text-decoration:underline;text-decoration-co
 <main>
   <!-- 遊ぶ -->
   <section class="card" id="secPlay">
-    <div class="k-empty play-empty"><img class="k-empty-img" src="/img/empty-karuta.webp" width="240" height="165" alt="" decoding="async"><div class="k-empty-body"><p class="k-empty-t">まだ札がありません</p><p class="k-empty-d">読み札を入れると、ここで読み上げます。</p></div><a class="k-btn k-btn-sub" href="#secAdd" onclick="setTimeout(function(){document.getElementById('addT').focus()},50)">札を足す</a></div>
+    <div class="k-empty play-empty"><img class="k-empty-img" src="/img/empty-karuta.webp" width="240" height="165" alt="" decoding="async"><div class="k-empty-body"><p class="k-empty-t">まだ札がありません</p><p class="k-empty-d">読み札を入れると、ここで読み上げます。</p></div><button class="k-btn k-btn-main" id="btnSample" type="button">見本の札で試す</button><a class="k-btn k-btn-sub" href="#secAdd" onclick="setTimeout(function(){document.getElementById('addT').focus()},50)">札を足す</a></div>
     <div class="play">
       <div class="count" id="count">まず札を登録してください</div>
       <div class="fuda k-karuta k-karuta-yomi" id="fuda">－</div>
@@ -605,6 +605,25 @@ $('btnShowK').onclick = () => { revealed = !revealed; renderPlay(); };
 $('btnNext').onclick = next;
 $('btnAgain').onclick = () => { const cs = cards(); if (current >= 0 && cs[current]) readCard(cs[current].t); };
 $('btnReset').onclick = () => { speechSynthesis.cancel(); shuffleDeck(); renderPlay('山札を混ぜ直しました。'); };
+
+/* 2026-11-05 見本の札（このサイトのオリジナル・お正月と冬の言葉）。初めて開いて札が0枚でも、すぐ読み上げを試せる。
+   いまのかるたが空で名前もなければそこに入れ、そうでなければ別の組として足す（ユーザーの札は消さない） */
+const SAMPLE = [
+  { t: 'あたらしい としの あさひが まぶしいな', k: 'あ' },
+  { t: 'おもちを やいたら ぷっくり ふくらんだ', k: 'お' },
+  { t: 'こたつで みかん みんなで わらう', k: 'こ' },
+  { t: 'ゆきだるま にっこり わらって まっている', k: 'ゆ' },
+  { t: 'たこあげて そらまで たかく とんでいけ', k: 'た' }
+];
+$('btnSample').onclick = () => {
+  const name = '見本（お正月・冬の言葉）';
+  const a = active();
+  if (a && !a.cards.length && !a.name) { a.name = name; a.cards = SAMPLE.map(c => ({ t: c.t, k: c.k })); }
+  else { const s = { id: newId(), name: name, cards: SAMPLE.map(c => ({ t: c.t, k: c.k })) }; state.sets.push(s); state.activeId = s.id; }
+  save(); shuffleDeck(); renderAll();
+  next();
+  if (typeof gtag === 'function') gtag('event', 'karuta_sample');
+};
 
 /* ===== 操作：かるたの切り替え ===== */
 $('setSel').onchange = (e) => {
