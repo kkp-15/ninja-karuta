@@ -251,7 +251,7 @@ details>summary{color:var(--k-sumi);text-decoration:underline;text-decoration-co
 <main>
   <!-- 遊ぶ -->
   <section class="card" id="secPlay">
-    <div class="k-empty play-empty"><img class="k-empty-img" src="/img/empty-karuta.webp" width="240" height="165" alt="" decoding="async"><div class="k-empty-body"><p class="k-empty-t">まだ札がありません</p><p class="k-empty-d">読み札を入れると、ここで読み上げます。</p></div><button class="k-btn k-btn-main" id="btnSample" type="button">見本の札で試す</button><a class="k-btn k-btn-sub" href="#secAdd" onclick="setTimeout(function(){document.getElementById('addT').focus()},50)">札を足す</a></div>
+    <div class="k-empty play-empty"><img class="k-empty-img" src="/img/shiba-karuta.webp" width="200" height="195" alt="柴犬の忍者" loading="lazy" decoding="async"><div class="k-empty-body"><p class="k-empty-t">まだ札がありません</p><p class="k-empty-d">読み札を入れると、ここで読み上げます。</p></div><button class="k-btn k-btn-main" id="btnSample" type="button">見本の札で試す</button><a class="k-btn k-btn-sub" href="#secAdd" onclick="setTimeout(function(){document.getElementById('addT').focus()},50)">札を足す</a></div>
     <div class="play">
       <div class="count" id="count">まず札を登録してください</div>
       <div class="fuda k-karuta k-karuta-yomi" id="fuda">－</div>
@@ -341,7 +341,7 @@ details>summary{color:var(--k-sumi);text-decoration:underline;text-decoration-co
   <section class="card">
     <h2>登録した札 <span id="num" style="color:var(--ink-soft);font-size:14px"></span></h2>
     <p class="note" style="margin:0 0 8px">その場で直せます。自動で保存されます。</p>
-    <div class="list" id="list"><div class="empty k-empty"><img class="k-empty-img" src="/img/empty-karuta.webp" width="240" height="165" alt="" loading="lazy" decoding="async"><div class="k-empty-body"><p class="k-empty-t">まだ札がありません</p><p class="k-empty-d">上の「札を足す」から足してください。</p></div></div></div>
+    <div class="list" id="list"><div class="empty k-empty"><img class="k-empty-img" src="/img/shiba-karuta.webp" width="200" height="195" alt="柴犬の忍者" loading="lazy" decoding="async"><div class="k-empty-body"><p class="k-empty-t">まだ札がありません</p><p class="k-empty-d">上の「札を足す」から足してください。</p></div></div></div>
 
     <button class="k-btn k-btn-sub" id="btnCopyAll" type="button"
             style="width:100%;margin-top:10px">この札を書き出す（別の端末に移す）</button>
@@ -578,7 +578,7 @@ function renderList(){
   const el = $('list');
   el.innerHTML = '';
   if (!cs.length) {
-    el.innerHTML = '<div class="empty k-empty"><img class="k-empty-img" src="/img/empty-karuta.webp" width="240" height="165" alt="" loading="lazy" decoding="async"><div class="k-empty-body"><p class="k-empty-t">まだ札がありません</p><p class="k-empty-d">上の「札を足す」から足してください。</p></div></div>';
+    el.innerHTML = '<div class="empty k-empty"><img class="k-empty-img" src="/img/shiba-karuta.webp" width="200" height="195" alt="柴犬の忍者" loading="lazy" decoding="async"><div class="k-empty-body"><p class="k-empty-t">まだ札がありません</p><p class="k-empty-d">上の「札を足す」から足してください。</p></div></div>';
     return;
   }
   cs.forEach((c, i) => {
