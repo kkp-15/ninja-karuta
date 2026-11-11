@@ -227,16 +227,16 @@ details>summary{color:var(--k-sumi);text-decoration:underline;text-decoration-co
 /* 本の紹介（Amazonアソシエイト・2026-11-04） */
 .bk{margin-top:26px}
 .bk>h2{margin:0;padding-bottom:4px;border-bottom:2px solid var(--k-sumi);font-size:18px;font-weight:800}
-.bk-pr{margin:8px 0 2px;font-size:12px;line-height:1.6;color:var(--k-text-2)}
+.bk-pr{margin:8px 0 2px;font-size:14px;line-height:1.6;color:var(--k-text-2)}
 .bk-pr span{display:inline-block;margin-right:6px;padding:0 5px;border:1.5px solid var(--k-text-2);border-radius:3px;font-weight:800}
 .bk-list{margin:0;padding:0;list-style:none}
 .bk-list li{border-bottom:1px solid var(--k-line-soft)}
 .bk-list a{display:flex;flex-direction:column;justify-content:center;min-height:52px;padding:8px 26px 8px 0;position:relative;text-decoration:none;color:var(--k-sumi)}
 .bk-list b{font-size:15px;font-weight:800;line-height:1.45}
-.bk-list span{font-size:13px;line-height:1.5;color:var(--k-text-2)}
+.bk-list span{font-size:14px;line-height:1.5;color:var(--k-text-2)}
 .bk-list em{font-style:normal;font-weight:800;color:var(--k-sumi)}
 .bk-list a::after{content:"→";position:absolute;right:4px;top:50%;transform:translateY(-50%);color:var(--k-orange)}
-.bk-ku{margin:8px 0 0;font-size:13px;line-height:1.7;color:var(--k-text-2)}
+.bk-ku{margin:8px 0 0;font-size:15px;line-height:1.7;color:var(--k-text-2)}
 .bk-ku a{font-weight:800;color:var(--k-sumi)}
 </style>
 <!-- kkp-rel-d4:end -->
@@ -450,9 +450,7 @@ function parseLine(line){
 
 /* ===== 読み上げ ===== */
 let voices = [];
-// 端末が持っている日本語の声を並べる。名前は「Eddy (日本語（日本）)」のように
-// 長くて分かりにくいので、括弧の中を落として短くする。
-function prettyName(n){ return n.replace(/\s*[（(].*$/, '').trim() || n; }
+// 端末が持っている日本語の声を並べる。
 function loadVoices(){
   voices = speechSynthesis.getVoices().filter(v => /^ja/i.test(v.lang));
   const sel = $('voice');
@@ -464,8 +462,15 @@ function loadVoices(){
   }
   sel.disabled = false; $('btnTry').disabled = false;
   $('voiceNote').textContent = '';
-  sel.innerHTML = voices.map(v =>
-    '<option value="' + v.name + '">' + prettyName(v.name) + (v.localService ? '' : '（通信あり）') + '</option>').join('');
+  // 名前（Kyoko・Eddy・Grandma…）では聞きやすさが分からないので、
+  // いちばん上を「おすすめ」にして、ほかは「声2・声3…」と並べる。選ぶのは「この声を聞く」で。
+  // おすすめ: ふつうの読み上げの声を先に、遊びの声（Eddy・Flo・Grandma など）は後ろへ。
+  const PREF = [/kyoko/i, /o-?ren/i, /otoya/i, /hattori/i, /nanami/i, /haruka/i, /ayumi/i, /google/i];
+  const FUN = /eddy|flo|grandma|grandpa|reed|rocko|sandy|shelley|ichiro|sayaka/i;
+  const rank = v => { const i = PREF.findIndex(r => r.test(v.name)); return i >= 0 ? i : FUN.test(v.name) ? 200 : (v.localService ? 100 : 150); };
+  voices = voices.map((v, i) => [v, i]).sort((a, b) => rank(a[0]) - rank(b[0]) || a[1] - b[1]).map(x => x[0]);
+  sel.innerHTML = voices.map((v, i) =>
+    '<option value="' + v.name + '">' + (i === 0 ? 'おすすめ' : '声' + (i + 1)) + (v.localService ? '' : '（通信あり）') + '</option>').join('');
   if (state.voice && voices.some(v => v.name === state.voice)) sel.value = state.voice;
   else state.voice = sel.value;
 }
