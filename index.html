@@ -18,11 +18,11 @@
 <meta name="msvalidate.01" content="EF6E7C7B123A3218DAE3B152F5B0764D" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#F08A3C">
-<title>かるた読み上げアプリ｜インストール不要、札を登録すれば読み手いらず</title>
+<title>お正月のかるた読み上げアプリ｜インストール不要、札を登録すれば読み手いらず</title>
 <meta name="description" content="インストール不要。ブラウザで開いて、かるたの読み札を登録すればランダムに読み上げます。読み手がいなくても全員で取り合えます。かるたは何組でも登録でき、1枚ずつその場で直せます。無料・登録不要、データは端末内のみ。">
 <link rel="canonical" href="https://karuta.kkpwebninja.com/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="かるた読み上げ｜インストール不要で読み手いらず">
+<meta property="og:title" content="お正月のかるた読み上げ｜インストール不要で読み手いらず">
 <meta property="og:description" content="インストール不要。手持ちのかるたの読み札を登録すると、ランダムに読み上げます。全員が取り手に回れます。">
 <meta property="og:url" content="https://karuta.kkpwebninja.com/">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon.png?v=2">
@@ -629,16 +629,32 @@ $('btnAgain').onclick = () => { const cs = cards(); if (current >= 0 && cs[curre
 $('btnReset').onclick = () => { speechSynthesis.cancel(); shuffleDeck(); renderPlay('山札を混ぜ直しました。'); };
 
 /* 2026-11-05 見本の札（このサイトのオリジナル・お正月と冬の言葉）。初めて開いて札が0枚でも、すぐ読み上げを試せる。
+   2026-11-27 お正月向けに20枚へ（すべてこのサイトで作った文。干支は2027年の未年。頭の字は20枚とも別）
    いまのかるたが空で名前もなければそこに入れ、そうでなければ別の組として足す（ユーザーの札は消さない） */
 const SAMPLE = [
   { t: 'あたらしい としの あさひが まぶしいな', k: 'あ' },
   { t: 'おもちを やいたら ぷっくり ふくらんだ', k: 'お' },
   { t: 'こたつで みかん みんなで わらう', k: 'こ' },
   { t: 'ゆきだるま にっこり わらって まっている', k: 'ゆ' },
-  { t: 'たこあげて そらまで たかく とんでいけ', k: 'た' }
+  { t: 'たこあげて そらまで たかく とんでいけ', k: 'た' },
+  { t: 'ひつじどし もこもこ えがおで はじまるよ', k: 'ひ' },
+  { t: 'めえめえと ひつじも ごあいさつ おめでとう', k: 'め' },
+  { t: 'うまから ひつじへ ことしの バトンタッチ', k: 'う' },
+  { t: 'かがみもち ちょこんと みかんの ぼうしかな', k: 'か' },
+  { t: 'はつゆめで ひつじの せなかに のってたよ', k: 'は' },
+  { t: 'ねんがじょう ポストを のぞいて わくわくだ', k: 'ね' },
+  { t: 'としだまの ふくろに ちいさな てがみつき', k: 'と' },
+  { t: 'ぞうにの おわん おかわり もう いっぱい', k: 'ぞ' },
+  { t: 'すごろくで ふりだしに もどって おおわらい', k: 'す' },
+  { t: 'ふくわらい めと はなが ばらばら どこへいく', k: 'ふ' },
+  { t: 'くりきんとん きんいろ ぴかぴか おせちばこ', k: 'く' },
+  { t: 'いちばんに ひいた おみくじ だいきちだ', k: 'い' },
+  { t: 'みんなで かぞえる さん にい いち あけまして', k: 'み' },
+  { t: 'しめかざり げんかんで おきゃくを おでむかえ', k: 'し' },
+  { t: 'せーので こまを まわして しょうぶだよ', k: 'せ' }
 ];
 $('btnSample').onclick = () => {
-  const name = '見本（お正月・冬の言葉）';
+  const name = '見本（お正月の札）';
   const a = active();
   if (a && !a.cards.length && !a.name) { a.name = name; a.cards = SAMPLE.map(c => ({ t: c.t, k: c.k })); }
   else { const s = { id: newId(), name: name, cards: SAMPLE.map(c => ({ t: c.t, k: c.k })) }; state.sets.push(s); state.activeId = s.id; }
